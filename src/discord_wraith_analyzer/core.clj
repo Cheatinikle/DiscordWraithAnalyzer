@@ -8,7 +8,7 @@
 (defn working-command
   [client message]
   (println (:content message))
-  (bot/say "https://giphy.com/gifs/9K2nFglCAQClO"))
+  (println (http/logs-from (:auth client) (:channel message) 5)))
 
 (defonce user-karma
   (atom {}))
