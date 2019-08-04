@@ -5,7 +5,7 @@
             [discord.http :as http]
             [discord-wraith-analyzer.utils :as util]))
 
-(defn- working-command
+(defn working-command
   [client message]
   (println (:content message))
   (bot/say "https://giphy.com/gifs/9K2nFglCAQClO"))
@@ -17,7 +17,7 @@
 (defonce karma-message-pattern
   (re-pattern "^<@(?<user>\\d+)>\\s*[+-](?<deltas>[+-]+)\\s*"))
 
-(defn- karma-handler [prefix client message]
+(defn karma-handler [prefix client message]
   (if-let [[match user-id deltas]  (re-find karma-message-pattern (:content message))]
     (let [user-karma-delta  (apply + (for [delta deltas] (case (str delta) "+" 1 "-" -1)))
           current-karma     (get @user-karma user-id 0)
@@ -25,17 +25,16 @@
       (swap! user-karma assoc user-id new-user-karma)
       (bot/say (format "Updating <@%s>'s karma to %s" user-id new-user-karma)))))
 
-(defonce emoti-counts
+(defonce emoji-counts
   (atom {}))
 
-(defn- emoti-handler
+(defn emoji-handler
   [prefix client message]
-  (when-let [emotis (re-seq (re-pattern ":[^:]+:")(:content message))]
-    (for [emoti emotis]
-      (let [new-emoti-count (inc (get @emoti-counts emoti 0))]
-        (println new-emoti-count emoti)
-        (swap! emoti-counts assoc emoti new-emoti-count)
-        (bot/say (format "%s was used %s time(s)" emoti new-emoti-count))))))
+  (let [emojis (re-seq (re-pattern "<:[^:]+:\\d+>")(:content message))]
+    (doseq [emoji emojis]
+      (let [new-emoji-count (inc (get @emoji-counts emoji 0))]
+        (swap! emoji-counts assoc emoji new-emoji-count)
+        (bot/say (format "%s was used %s time(s)" emoji new-emoji-count))))))
 
 (defn initialize-bot
   []
@@ -52,4 +51,4 @@
   "I don't do a whole lot."
   [& args]
   (start-bot [{:name "working" :fn working-command }]
-             [ karma-handler emoti-handler ]))
+             [ karma-handler emoji-handler ]))

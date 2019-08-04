@@ -1,7 +1,12 @@
 (ns discord-wraith-analyzer.core-test
   (:require [clojure.test :refer :all]
-            [discord-wraith-analyzer.core :refer :all]))
+            [discord-wraith-analyzer.core :refer :all]
+            [taoensso.timbre :as timbre]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(deftest emoji-test
+  (testing "Can it detect emojis?"
+    (reset! emoji-counts {})
+    (emoji-handler "!!" nil {:content ":unicorn: and :haskell:"})
+    (is (= (get ":unicorn:" @emoji-counts) 1))
+    (is (= (get ":haskell:" @emoji-counts) 1))))
+
